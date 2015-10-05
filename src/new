@@ -1,3 +1,0 @@
-char * const a = 'a';
-const char * a = 'a';
-char const * a;
