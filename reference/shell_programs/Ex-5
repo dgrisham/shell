@@ -1,0 +1,15 @@
+#!/bin/bash
+i=1
+i=$i+1
+echo $i  
+
+i=1
+i=`$i + 1`
+echo $i 
+
+i=1
+i=`expr $i+1`
+echo $i 
+
+exit 0
+

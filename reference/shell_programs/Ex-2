@@ -1,0 +1,11 @@
+#!/bin/bash
+
+x=1                              # NOTE: no spaces in the assignment!
+                                 # NOTE: no declaration of variable
+echo The value of x is $x        # $x prints value of variable x
+
+echo The home directory is $HOME
+echo Your current path is $PATH
+echo Your current shell is $SHELL
+
+exit 0

@@ -1,0 +1,9 @@
+#!/bin/bash
+i=1
+num=5
+while [ $i -le $num ]
+do
+   echo $i >> file-test
+   i=`expr $i + 1`
+done
+exit 0

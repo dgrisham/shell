@@ -1,0 +1,14 @@
+#!/bin/bash
+
+x=1
+echo $x     
+echo "$x"   
+
+address="Colorado School of Mines       Golden, CO"
+
+echo $address 
+echo '$address'
+echo "$address"  
+
+exit 0
+

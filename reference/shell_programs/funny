@@ -1,0 +1,5 @@
+#!/bin/rm
+who | grep gonzalez
+exit 0
+
+

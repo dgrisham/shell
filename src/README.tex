@@ -1,0 +1,283 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+    \usepackage{xltxtra,xunicode}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+  \newcommand{\euro}{€}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\ifxetex
+  \usepackage[setpagesize=false, % page size defined by xetex
+              unicode=false, % unicode breaks when used with xetex
+              xetex]{hyperref}
+\else
+  \usepackage[unicode=true]{hyperref}
+\fi
+\usepackage[usenames,dvipsnames]{color}
+\hypersetup{breaklinks=true,
+            bookmarks=true,
+            pdfauthor={David Grisham},
+            pdftitle={Project 2 -- Shell},
+            colorlinks=true,
+            citecolor=blue,
+            urlcolor=blue,
+            linkcolor=magenta,
+            pdfborder={0 0 0}}
+\urlstyle{same}  % don't use monospace font for urls
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+
+\title{Project 2 -- Shell}
+\author{David Grisham}
+\date{30 September, 2015}
+
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+\begin{document}
+\maketitle
+
+\subsubsection{Usage}\label{usage}
+
+Run \texttt{make} in the \texttt{src/} directory to build the project.
+If all goes well, then you should be left with an executable called
+\texttt{myshell} in the \texttt{src/} directory. Running this will open
+the shell.
+
+\subsubsection{List of Files}\label{list-of-files}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{shell.cpp}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    main shell process that sets up the environment, then (basically)
+    follows these steps:
+
+    \begin{enumerate}
+    \def\labelenumi{\arabic{enumi}.}
+    \tightlist
+    \item
+      display prompt to user
+    \item
+      read in user input (currently only accepts built-in commands)
+    \item
+      tokenize input and handle the following
+
+      \begin{itemize}
+      \tightlist
+      \item
+        local variable assignment
+      \item
+        variable substitution
+      \item
+        alias substitution
+      \end{itemize}
+    \item
+      execute the function corresponding to the user input
+    \end{enumerate}
+  \end{itemize}
+\item
+  \texttt{builtins.cpp}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    contains an implementation for each command that's built-in to the
+    shell. see the `Builtins' section for more details
+  \end{itemize}
+\item
+  \texttt{builtins.h}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    header file for the functions defined in \texttt{builtins.cpp}
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{Builtins}\label{builtins}
+
+The following builtin functions are currently supported by this shell
+(Note: terms surround by \texttt{\textless{}\textgreater{}} (e.g.
+\texttt{\textless{}term\textgreater{}}) should be replaced by user
+input.):
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{ls}, \texttt{ls\ \textless{}directory\textgreater{}}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    with no argument, lists the files in the current working directory
+  \item
+    otherwise, lists the files in
+    \texttt{\textless{}directory\textgreater{}}
+  \end{itemize}
+\item
+  \texttt{cd\ \textless{}directory\textgreater{}}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    if \texttt{cd} is called with no arguments, the shell will change
+    into the directory defined by \$HOME (usually
+    \texttt{/home/\textless{}username\textgreater{}})
+  \item
+    otherwise, changes the current working directory to
+    \texttt{\textless{}directory\textgreater{}}
+  \end{itemize}
+\item
+  \texttt{echo\ \textless{}arg\textgreater{}}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    prints \texttt{\textless{}arg\textgreater{}} to stdout, followed by
+    a newline
+  \end{itemize}
+\item
+  \texttt{pwd} displays the value held in the \texttt{\$PWD} environment
+  variable. It is left up to other functions (like \texttt{cd}) to
+  update \texttt{\$PWD} when necessary
+\item
+  \texttt{alias},
+  \texttt{alias\ \textless{}cmd\textgreater{}=\textless{}def\textgreater{}}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    with no arguments, \texttt{alias} will show all of the currenty
+    defined aliases
+  \item
+    otherwise, \texttt{\textless{}cmd\textgreater{}} is the alias name,
+    and \texttt{\textless{}def\textgreater{}} is the command that should
+    be called when \texttt{\textless{}cmd\textgreater{}} is called
+  \end{itemize}
+\item
+  \texttt{unalias\ -a}, \texttt{unalias\ \textless{}cmd\textgreater{}}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    with the \texttt{-a} option, unalias will remove all currently
+    defined aliases
+  \item
+    \texttt{\textless{}cmd\textgreater{}} is the name of the alias that
+    should be removed from the aliases list
+  \end{itemize}
+\item
+  \texttt{exit}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    exists the shell with an exit code EXIT\_SUCCESS
+  \end{itemize}
+\item
+  \texttt{history}, \texttt{history\ \textless{}N\textgreater{}}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    with no arguments, \texttt{history} displays the entire history of
+    shell commands ran in the current session
+  \item
+    \texttt{\textless{}N\textgreater{}} is the number of commands in the
+    history to display, starting with the most recent
+  \end{itemize}
+\item
+  \texttt{!!}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    executes the last command that was ran
+  \end{itemize}
+\item
+  \texttt{!\textless{}N\textgreater{}}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    executes the \texttt{N}th command in the history
+  \end{itemize}
+\item
+  \texttt{!-\textless{}N\textgreater{}}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    executes the \texttt{N}th-preceding command (same as Bash)
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{Unusual / Interesting
+Features}\label{unusual-interesting-features}
+
+As noted in the Builtins section:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{cd} defaults to the home directory when called with no
+  arguments
+\item
+  \texttt{history\ \textless{}N\textgreater{}} can be used to see the
+  \texttt{N} most recent lines in the history
+\item
+  \texttt{!-\textless{}N\textgreater{}} can be used to execute the
+  \texttt{N}th-preceding line in the history (\texttt{N} is the number
+  of the desired line (in the history) relative to the current line)
+\end{itemize}
+
+As point of potential interest, the way in which aliases are handled
+allows the user to define nested aliases without issue. For example:
+
+\begin{verbatim}
+prompt > alias e=echo
+prompt > e hello
+hello 
+prompt > alias a=e
+prompt > a hello
+hello 
+\end{verbatim}
+
+\subsubsection{Number of Hours Spent}\label{number-of-hours-spent}
+
+Intermediate 1 -- Around 6 hours
+
+\end{document}

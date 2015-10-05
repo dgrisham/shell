@@ -1,0 +1,12 @@
+#!/bin/bash
+nu ()
+  {
+     who | wc -l
+     echo your parameter is $1
+   }
+
+
+echo Number of users is `nu 5 6 7`
+echo Number of user is now `nu`
+
+exit 0

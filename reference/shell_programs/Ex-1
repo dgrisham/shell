@@ -1,0 +1,6 @@
+#!/bin/bash
+who | grep gonzalez
+exit 0
+# this is comment
+
+

@@ -1,0 +1,12 @@
+#!/bin/bash
+read x y z
+echo "x = " $x
+echo "y = " $y
+echo "z = " $z
+
+echo
+
+read text 
+echo "text = " $text
+
+exit 0

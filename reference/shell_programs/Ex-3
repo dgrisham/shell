@@ -1,0 +1,15 @@
+#!/bin/bash
+
+grep current shell Ex-2             # only greps filename shell 
+
+echo
+
+grep 'current shell' Ex-2           #       vs. what happens here 
+
+echo
+
+x=1
+echo $x                        
+echo '$x'                      
+
+exit 0

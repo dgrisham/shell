@@ -1,0 +1,15 @@
+#!/bin/bash
+nu ()
+  {
+     who | wc -l
+     echo 
+     echo "in function " $1 
+   }
+
+echo "in main " $1 
+echo 
+echo Number of users is `nu 5`
+echo 
+echo Number of user is now `nu 9`
+echo 
+exit 0

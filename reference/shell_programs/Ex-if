@@ -1,0 +1,9 @@
+#!/bin/bash
+read name
+if [ "$name" = santiago ]
+then
+echo It is Santiago
+else
+echo It is "$name", not Santiago
+fi
+exit 0

@@ -1,0 +1,30 @@
+#!/bin/bash
+
+echo
+echo
+echo PRINTING SETENV - NOT KNOWN BY BASH
+echo
+echo
+
+setenv
+
+echo 
+echo
+
+read x
+
+echo
+echo
+echo PRINTING PRINTENV - KNOWN BY BASH
+echo
+echo
+
+read x
+
+printenv
+
+exit 0
+
+
+
+

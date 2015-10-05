@@ -1,0 +1,11 @@
+#!/bin/bash
+read name
+if [ $name = santiago ]
+then
+   echo 1st: It is santiago
+fi
+if [ "$name" = santiago ]
+then
+   echo 2nd: It is santiago
+fi
+exit 0

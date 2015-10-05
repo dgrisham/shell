@@ -1,0 +1,8 @@
+#!/bin/bash
+if test -r Ex-if
+then
+echo Readable 
+else
+echo not readable
+fi
+exit 0

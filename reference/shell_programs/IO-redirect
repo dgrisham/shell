@@ -1,0 +1,6 @@
+#!/bin/tcsh
+echo "This does NOT work in tcsh (if file test exists)" > test 
+echo "This does work in bash (if file test exists)" > test 
+exit 0
+
+

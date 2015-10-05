@@ -1,0 +1,10 @@
+#!/bin/bash
+read num
+echo $num
+case $num in
+    1) echo input is one;;
+    2) echo input is two;;
+    3 | 4) echo input is three or four;;
+    *) echo input is not 1, 2, 3, or 4;;
+esac
+exit 0

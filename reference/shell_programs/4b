@@ -1,0 +1,10 @@
+#!/bin/bash
+
+shell1='My shell is: $SHELL'
+echo $shell1
+
+shell2="My shell is: $SHELL"
+echo $shell2
+
+exit 0
+

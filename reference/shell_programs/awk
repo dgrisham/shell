@@ -1,0 +1,11 @@
+#!/bin/bash
+
+who
+
+echo -e "\n\n\n"
+
+echo "Names:"
+who | awk '{print $1}'
+echo ""
+echo "Dates:"
+who | awk '{print $3" "$4}'

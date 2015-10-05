@@ -1,0 +1,8 @@
+#!/bin/bash
+LIMIT=64
+for ((i=1; i <= LIMIT; i++))
+do
+  echo $i
+done
+exit 0
+

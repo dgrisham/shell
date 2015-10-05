@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo There are `who | wc -l` users logged on      # What is printed here?                                    
+echo There are 'who | wc -l' users logged on      # What is printed here?         
+
+exit 0
+

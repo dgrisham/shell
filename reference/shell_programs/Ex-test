@@ -1,0 +1,9 @@
+#!/bin/bash 
+x=7
+if test $x -eq 7 # same as if [ $x -eq 7 ] 
+then 
+echo x is 7 
+else 
+echo x is not 7, it is $x 
+fi 
+exit 0 
