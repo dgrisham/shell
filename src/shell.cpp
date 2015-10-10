@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <sys/stat.h>
+#include <sys/wait.h>
 
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -27,6 +28,9 @@
 //   #include <sys/types.h>
 //   #include <sys/wait.h>
 //   #include <unistd.h>
+
+const int STDIN_CONST = dup(0);
+const int STDOUT_CONST = dup(1);
 
 using namespace std;
 
@@ -57,71 +61,94 @@ int execute_external_command(vector<string> tokens) {
     path_delim = ":";
 
     // get path env variable
-    vec_str_t path;
-    vec_init(&path);
-    vec_push(&path, getenv("PATH"));
+    string path = getenv("PATH");
 
-    // char* vector to hold path directories
-    vec_str_t path_dirs;
-    vec_init(&path_dirs);
+    // string vector to hold path directories
+    vector<string> path_dirs;
 
     // char* to hold a single directory in the path
     char *dir = new char[PATH_MAX + 1];
 
     // use strtok to find all paths in PATH, separated by path_delim (":")
-    if ((dir = strtok(*path.data, path_delim)) == NULL) {
+    if ((dir = strtok((char*)path.c_str(), path_delim)) == NULL) {
         // no path_delim found in path
-        if (strcmp(*path.data, "\0")) {
+        if (path == "\0") {
             // path is empty, return 1
             perror("PATH is empty ");
             return 1;
         } else {
             // path had one entry, push it onto path_dirs
-            vec_push(&path_dirs, *path.data);
+            path_dirs.push_back(path);
         }
     } else {
         // path_delim found in path, which means there are multiple dirs in path
         
         // push the first directory (found in the first call to strtok) onto path_dirs
-        vec_push(&path_dirs, dir);
+        path_dirs.push_back(dir);
 
         // find all of the other dirs in path
         while ((dir = strtok(NULL, path_delim)) != NULL) {
             // ...and push each onto path_dirs
-            vec_push(&path_dirs, dir);
+            path_dirs.push_back(dir);
         }
     }
-    
-    // we're done with path, so deallocate it
-    vec_deinit(&path);
 
-    char cmd[tokens[0].length() + 1];
-    sprintf(cmd, "%s", tokens[0].c_str());
+    // char *arg = (char *)malloc(tokens.size());
+    char *args[(tokens.size() + 1)*sizeof(char*)];
 
-    printf("cmd: %s\n", cmd);
+    string cmd = tokens[0];
+
     // look for input in path
-    for (int i = 0; i < path_dirs.length; ++i) {
-        // char vector to hold path + filename that *may* be what we're looking for
-        vec_char_t test_loc;
-        vec_init(&test_loc);
+    for (int i = 0; i < path_dirs.size(); ++i) {
+        // string to hold path + filename that *may* be what we're looking for
+        string test_loc = path_dirs[i];
 
-        test_loc.data = path_dirs.data[i];
-
-        vec_pusharr(&test_loc, path_dirs.data[i], strlen(path_dirs.data[i]) + 1);
-
-        vec_pusharr(&test_loc, cmd, tokens[0].length() + 1);
-
+        // append filename to end of path
+        test_loc += "/";
+        test_loc += cmd;
+        /*
+         * if (access(test_loc.c_str(), F_OK)==0)
+         */
         struct stat *file_info;
 
         // use stat() to test if file exists
-        if (lstat((const char*)test_loc.data, file_info) == 0 && S_ISREG(file_info->st_mode)) {
-            printf("director: %s", test_loc.data);
+        if (access(test_loc.c_str(), F_OK) == 0) {
+
+            int j = 0;
+            args[j] = (char *)(malloc((test_loc.length() + 1) * sizeof(char)));
+            strcpy(args[j], test_loc.c_str());
+            ++j;
+
+            for (; j < tokens.size(); ++j) {
+                args[j] = (char *)malloc((tokens[j].length() + 1) * sizeof(char));
+                strcpy(args[j], tokens[j].c_str());
+            }
+
+            args[tokens.size()] = (char*)malloc(1);
+            args[tokens.size()] = NULL;
+
+            pid_t cpid, cpid2;
+            int status;
+
+            if ((cpid = fork()) == -1) {
+                perror("process fork failed");
+                return 1;
+            }
+
+            if (cpid == 0) {
+                execvp(args[0], args);
+                perror("exec failed");
+                return -1;
+            } else {
+                cpid2 = waitpid(cpid, &status, 0);
+
+                return WEXITSTATUS(status);
+            }
         }
     }
 
-    vec_deinit(&path_dirs);
-
-    return 0;
+    fprintf(stderr, "error: command not found\n");
+    return 1;
 }
 
 char *prompt_state(int return_value) {
@@ -130,7 +157,7 @@ char *prompt_state(int return_value) {
     if (return_value == 0) {
         sprintf(state, "+");
     } else {
-        sprintf(state, "+");
+        sprintf(state, "-");
     }
 
     return state;
@@ -301,9 +328,99 @@ void variable_substitution(vector<string>& tokens) {
     }
 }
 
+void redirect_output(vector<string>& tokens) {
+    FILE *out;
+
+    // sorry for the repetitive code, I'll fix it for the final submission
+    for (vector<string>::iterator s = tokens.begin(); s != tokens.end(); ++s) {
+        if (strcmp(s->c_str(), ">") == 0) {
+            advance(s, 1);
+            out = fopen(s->c_str(), "w");
+            dup2(fileno(out), STDOUT_FILENO);
+            fclose(out);
+        } else if (strcmp(s->c_str(), ">>") == 0) {
+            advance(s, 1);
+            out = fopen(s->c_str(), "a+");
+            dup2(fileno(out), STDOUT_FILENO);
+            fclose(out);
+        }
+    }
+
+    for (vector<string>::iterator s2 = tokens.begin(); s2 != tokens.end(); ++s2) {
+        if (strcmp(s2->c_str(), ">") == 0) {
+            tokens.erase(s2, tokens.end());
+            break;
+        } else if (strcmp(s2->c_str(), ">>") == 0) {
+            tokens.erase(s2, tokens.end());
+            break;
+        }
+    }
+}
+
+vector<string> handle_piping(vector<string> tokens) {
+    vector<string>::iterator s;
+    for (s = tokens.begin(); s != tokens.end(); ++s) {
+        if (strcmp(s->c_str(), "|") == 0) {
+            break;
+        }
+    }
+
+    if (s == tokens.end()) {
+        return tokens;
+    }
+
+    int pipefd[2];
+    pid_t cpid;
+    string output;
+    char buf;
+
+    vector<string> child_tokens = tokens;
+
+
+    if (pipe(pipefd) == -1) {
+        perror("pipe error");
+        exit(EXIT_FAILURE);
+    }
+
+    if ((cpid = fork()) == -1) {
+        perror("fork error");
+        exit(EXIT_FAILURE);
+    }
+
+    if (cpid == 0) {
+        dup2(pipefd[0], STDIN_FILENO);
+        tokens.erase(tokens.begin(), ++s);
+
+        close(pipefd[1]);
+
+        string input;
+
+        char c;
+        while(read(STDIN_FILENO, &c, 1) > 0) {
+            input += c;
+        }
+
+        close(pipefd[0]);
+
+        return tokens;
+    } else {
+        dup2(pipefd[1], STDOUT_FILENO);
+
+        close(pipefd[1]);
+        close(pipefd[0]);
+
+        tokens.erase(s, tokens.end());
+
+        return tokens;
+    }
+}
+
 // general function to process a line
 vector<string> process_line(const char *line) {
     vector<string> tokens = tokenize(line);
+
+    // handle piping...
+    tokens = handle_piping(tokens);
 
     // handle local vars...
     local_variable_assignment(tokens);
@@ -311,9 +428,11 @@ vector<string> process_line(const char *line) {
     // sub variable refs...
     variable_substitution(tokens);
 
+    // take care of file redirection...
+    redirect_output(tokens);
+
     return tokens;
 }
-
 
 // Executes a line of input by either calling execute_external_command or
 // directly invoking the built-in command
@@ -426,6 +545,12 @@ int main() {
     // The return value of the last command executed
     int return_value = 0;
 
+    char *line;
+
+    vector<string> tokens;
+
+    pid_t main_pid = getpid();
+
     // Loop for multiple successive commands 
     while (true) {
 
@@ -433,7 +558,7 @@ int main() {
         string prompt = get_prompt(return_value);
 
         // Read a line of input from the user
-        char* line = readline(prompt.c_str());
+        line = readline(prompt.c_str());
 
         // If the pointer is null, then an EOF has been received (ctrl-d)
         if (!line) {
@@ -453,15 +578,32 @@ int main() {
             // Add this command to readline's history
             add_history(line);
 
-            vector<string> tokens = process_line(line);
+            // split line into tokens, handle variables, etc.
+            tokens = process_line(line);
 
             // Execute the line
             return_value = execute_line(tokens, builtins);
+
+            // empty tokens before next round
+            tokens.clear();
+
+            // reset output (in case redirected before)
+            if (STDOUT_FILENO != STDOUT_CONST) {
+                close(STDOUT_FILENO);
+                dup2(STDOUT_CONST, STDOUT_FILENO);
+            }
+
+            if (STDIN_FILENO != STDIN_CONST) {
+                close(STDIN_FILENO);
+                dup2(STDIN_CONST, STDIN_FILENO);
+            }
+
+            if (getpid() != main_pid) {
+                _exit(EXIT_SUCCESS);
+            } else {
+                wait(NULL);
+            }
         }
-
-        // Free the memory for the input string
-        free(line);
     }
-
     return 0;
 }

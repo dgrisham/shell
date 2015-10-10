@@ -1,7 +1,7 @@
 ---
 title: Project 2 -- Shell
 author: David Grisham
-date: 30 September, 2015
+date: 30 September 2015
 ...
 
 ### Usage

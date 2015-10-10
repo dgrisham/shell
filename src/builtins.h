@@ -13,8 +13,6 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#include "vec/src/vec.h"
-
 using std::vector;
 using std::string;
 
