@@ -70,7 +70,7 @@ int execute_external_command(vector<string> tokens) {
     char *dir = new char[PATH_MAX + 1];
 
     // use strtok to find all paths in PATH, separated by path_delim (":")
-    if ((dir = strtok((char*)path.c_str(), path_delim)) == NULL) {
+    if (a(dir = strtok((char*)path.c_str(), path_delim)) == NULL) {
         // no path_delim found in path
         if (path == "\0") {
             // path is empty, return 1

@@ -7,4 +7,4 @@ myshell: $(OBJS)
 	g++ $(OBJS) -g -l readline -o $(NAME)
 
 clean:
-	rm -rf $(NAME)
+	rm -f $(NAME)
